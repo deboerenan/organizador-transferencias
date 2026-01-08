@@ -1,0 +1,23 @@
+# Pastas criadas pelo organizador
+Imagens/
+Documentos/
+Vídeos/
+Músicas/
+Compactados/
+Programação/
+Executáveis/
+Outros/
+ISOs_e_Imagens/
+Torrents/
+Fontes/
+
+# Arquivos do sistema
+.DS_Store
+*.pyc
+__pycache__/
+Thumbs.db
+desktop.ini
+
+# Backups
+*.bak
+*.tmp
