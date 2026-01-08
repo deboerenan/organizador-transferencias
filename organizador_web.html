@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📁 Organizador de Arquivos - Navegador</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #6a11cb;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        /* Área de Upload */
+        .upload-area {
+            background: #f8f9fa;
+            border: 3px dashed #6a11cb;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            background: #eef2ff;
+            border-color: #2575fc;
+        }
+        
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            color: #6a11cb;
+        }
+        
+        .upload-text {
+            font-size: 1.2em;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .upload-note {
+            color: #777;
+            font-size: 0.9em;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        /* Lista de Arquivos */
+        .files-section {
+            margin: 30px 0;
+        }
+        
+        .files-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        
+        .file-item {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .file-item:hover {
+            background: #f8f9ff;
+            transform: translateX(5px);
+        }
+        
+        .file-icon {
+            font-size: 1.5em;
+            margin-right: 15px;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .file-info {
+            flex-grow: 1;
+        }
+        
+        .file-name {
+            font-weight: 500;
+        }
+        
+        .file-size {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .file-category {
+            background: #e3f2fd;
+            padding: 3px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: #1976d2;
+        }
+        
+        /* Pastas */
+        .folders-section {
+            margin: 30px 0;
+        }
+        
+        .folders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .folder {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .folder:hover {
+            border-color: #6a11cb;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .folder-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .folder-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .folder-count {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        /* Botões */
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+        
+        .btn {
+            background: #6a11cb;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: #2575fc;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Instruções */
+        .instructions {
+            background: #fff9e6;
+            border: 1px solid #ffd54f;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .instructions h3 {
+            color: #ff9800;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            color: #666;
+        }
+        
+        .instructions li {
+            margin: 8px 0;
+        }
+        
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .upload-area {
+                padding: 20px;
+            }
+            
+            .folders-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .btn {
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📁 ORGANIZADOR DE ARQUIVOS WEB</h1>
+            <p class="subtitle">Organize seus arquivos diretamente no navegador - sem instalar nada!</p>
+        </header>
+        
+        <!-- Área de Upload -->
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">📤</div>
+            <div class="upload-text">Clique aqui ou arraste arquivos para organizar</div>
+            <div class="upload-note">Selecione múltiplos arquivos (Ctrl + Clique)</div>
+            <input type="file" id="fileInput" multiple onchange="handleFiles(this.files)">
+        </div>
+        
+        <!-- Lista de Arquivos -->
+        <div class="files-section" id="filesSection" style="display: none;">
+            <h2>📄 Arquivos Selecionados</h2>
+            <div class="files-list" id="filesList">
+                <!-- Arquivos aparecerão aqui -->
+            </div>
+        </div>
+        
+        <!-- Pastas Sugeridas -->
+        <div class="folders-section">
+            <h2>📁 Pastas que serão criadas</h2>
+            <div class="folders-grid" id="foldersGrid">
+                <!-- Pastas aparecerão aqui -->
+            </div>
+        </div>
+        
+        <!-- Botões de Ação -->
+        <div class="actions">
+            <button class="btn" onclick="organizeFiles()" id="organizeBtn" disabled>
+                🚀 ORGANIZAR ARQUIVOS
+            </button>
+            <button class="btn" onclick="resetOrganizer()">
+                🔄 LIMPAR TUDO
+            </button>
+        </div>
+        
+        <!-- Instruções -->
+        <div class="instructions">
+            <h3>📌 COMO FUNCIONA:</h3>
+            <ol>
+                <li><strong>Selecione arquivos</strong> clicando na área acima</li>
+                <li>Veja em quais pastas cada arquivo será organizado</li>
+                <li>Clique em "ORGANIZAR ARQUIVOS" para ver o resultado</li>
+                <li><strong>Importante:</strong> Este organizador funciona apenas no navegador para visualização.</li>
+                <li>Para mover arquivos realmente, use a versão Python ou copie manualmente.</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        const categories = {
+            '📷 Imagens': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.webp'],
+            '📄 Documentos': ['.pdf', '.doc', '.docx', '.txt', '.xlsx', '.pptx', '.odt', '.rtf'],
+            '🎬 Vídeos': ['.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm'],
+            '🎵 Músicas': ['.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a'],
+            '📦 Compactados': ['.zip', '.rar', '.7z', '.tar', '.gz', '.bz2'],
+            '⚙️ Programas': ['.exe', '.msi', '.py', '.js', '.html', '.css', '.java'],
+            '📂 Outros': []
+        };
+
+        // Inicializa as pastas
+        function initFolders() {
+            const foldersGrid = document.getElementById('foldersGrid');
+            foldersGrid.innerHTML = '';
+            
+            for (const [folderName, extensions] of Object.entries(categories)) {
+                const folderDiv = document.createElement('div');
+                folderDiv.className = 'folder';
+                folderDiv.id = `folder-${folderName.replace(' ', '-')}`;
+                
+                let icon = '📁';
+                if (folderName.includes('Imagens')) icon = '📷';
+                else if (folderName.includes('Documentos')) icon = '📄';
+                else if (folderName.includes('Vídeos')) icon = '🎬';
+                else if (folderName.includes('Músicas')) icon = '🎵';
+                else if (folderName.includes('Compactados')) icon = '📦';
+                else if (folderName.includes('Programas')) icon = '⚙️';
+                
+                folderDiv.innerHTML = `
+                    <div class="folder-icon">${icon}</div>
+                    <div class="folder-name">${folderName}</div>
+                    <div class="folder-count" id="count-${folderName.replace(' ', '-')}">0 arquivos</div>
+                `;
+                
+                foldersGrid.appendChild(folderDiv);
+            }
+        }
+
+        // Manipula arquivos selecionados
+        function handleFiles(files) {
+            selectedFiles = Array.from(files);
+            
+            if (selectedFiles.length > 0) {
+                document.getElementById('filesSection').style.display = 'block';
+                updateFilesList();
+                updateFolderCounts();
+                document.getElementById('organizeBtn').disabled = false;
+            }
+        }
+
+        // Atualiza lista de arquivos
+        function updateFilesList() {
+            const filesList = document.getElementById('filesList');
+            filesList.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const extension = '.' + file.name.split('.').pop().toLowerCase();
+                const category = getFileCategory(extension);
+                const icon = getFileIcon(extension);
+                
+                fileItem.innerHTML = `
+                    <div class="file-icon">${icon}</div>
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    <div class="file-category">${category}</div>
+                `;
+                
+                filesList.appendChild(fileItem);
+            });
+        }
+
+        // Atualiza contagem das pastas
+        function updateFolderCounts() {
+            // Reseta contagens
+            for (const folderName of Object.keys(categories)) {
+                const countElement = document.getElementById(`count-${folderName.replace(' ', '-')}`);
+                countElement.textContent = '0 arquivos';
+            }
+            
+            // Conta arquivos por categoria
+            selectedFiles.forEach(file => {
+                const extension = '.' + file.name.split('.').pop().toLowerCase();
+                const category = getFileCategory(extension);
+                
+                const countElement = document.getElementById(`count-${category.replace(' ', '-')}`);
+                if (countElement) {
+                    const currentText = countElement.textContent;
+                    const currentCount = parseInt(currentText) || 0;
+                    countElement.textContent = `${currentCount + 1} arquivos`;
+                }
+            });
+        }
+
+        // Organiza arquivos (simulação)
+        function organizeFiles() {
+            if (selectedFiles.length === 0) return;
+            
+            // Simulação de organização
+            const organizeBtn = document.getElementById('organizeBtn');
+            organizeBtn.innerHTML = '⏳ ORGANIZANDO...';
+            organizeBtn.disabled = true;
+            
+            setTimeout(() => {
+                let resultHTML = '<h3>✅ ORGANIZAÇÃO SIMULADA CONCLUÍDA!</h3>';
+                resultHTML += '<p>Na versão real, os arquivos seriam movidos para:</p><ul>';
+                
+                // Agrupa por categoria
+                const filesByCategory = {};
+                selectedFiles.forEach(file => {
+                    const extension = '.' + file.name.split('.').pop().toLowerCase();
+                    const category = getFileCategory(extension);
+                    
+                    if (!filesByCategory[category]) {
+                        filesByCategory[category] = [];
+                    }
+                    filesByCategory[category].push(file.name);
+                });
+                
+                // Mostra resultado
+                for (const [category, files] of Object.entries(filesByCategory)) {
+                    resultHTML += `<li><strong>${category}:</strong> ${files.length} arquivo(s)</li>`;
+                }
+                
+                resultHTML += '</ul>';
+                resultHTML += '<p><strong>Para mover realmente os arquivos:</strong></p>';
+                resultHTML += '<ol>';
+                resultHTML += '<li>Use a versão Python do organizador</li>';
+                resultHTML += '<li>Ou copie manualmente para as pastas sugeridas</li>';
+                resultHTML += '</ol>';
+                
+                // Mostra resultado
+                alertHTML(resultHTML);
+                
+                // Reseta botão
+                organizeBtn.innerHTML = '🚀 ORGANIZAR ARQUIVOS';
+                organizeBtn.disabled = false;
+                
+            }, 1500);
+        }
+
+        // Funções auxiliares
+        function getFileCategory(extension) {
+            for (const [category, extensions] of Object.entries(categories)) {
+                if (extensions.includes(extension.toLowerCase())) {
+                    return category;
+                }
+            }
+            return '📂 Outros';
+        }
+
+        function getFileIcon(extension) {
+            const imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg'];
+            const docExts = ['.pdf', '.doc', '.docx', '.txt', '.xlsx', '.pptx'];
+            const videoExts = ['.mp4', '.avi', '.mov', '.mkv', '.wmv'];
+            const musicExts = ['.mp3', '.wav', '.flac', '.aac'];
+            const zipExts = ['.zip', '.rar', '.7z', '.tar'];
+            const progExts = ['.exe', '.py', '.js', '.html', '.java'];
+            
+            if (imageExts.includes(extension)) return '🖼️';
+            if (docExts.includes(extension)) return '📄';
+            if (videoExts.includes(extension)) return '🎬';
+            if (musicExts.includes(extension)) return '🎵';
+            if (zipExts.includes(extension)) return '📦';
+            if (progExts.includes(extension)) return '⚙️';
+            return '📄';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function resetOrganizer() {
+            selectedFiles = [];
+            document.getElementById('filesSection').style.display = 'none';
+            document.getElementById('filesList').innerHTML = '';
+            document.getElementById('organizeBtn').disabled = true;
+            document.getElementById('fileInput').value = '';
+            initFolders();
+        }
+
+        function alertHTML(html) {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                z-index: 1000;
+                max-width: 500px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+            `;
+            
+            alertDiv.innerHTML = html + `
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="background: #6a11cb; color: white; border: none; padding: 10px 30px; border-radius: 20px; cursor: pointer;">
+                        FECHAR
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+        }
+
+        // Arrastar e soltar
+        document.addEventListener('DOMContentLoaded', function() {
+            initFolders();
+            
+            const uploadArea = document.querySelector('.upload-area');
+            
+            // Previne comportamento padrão
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // Destaca área durante drag
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                uploadArea.style.background = '#eef2ff';
+                uploadArea.style.borderColor = '#2575fc';
+            }
+            
+            function unhighlight() {
+                uploadArea.style.background = '#f8f9fa';
+                uploadArea.style.borderColor = '#6a11cb';
+            }
+            
+            // Lida com drop
+            uploadArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+        });
+    </script>
+</body>
+</html>
